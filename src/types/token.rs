@@ -1,5 +1,7 @@
 use std::fmt::{Display, Formatter};
 
+use super::token_type::TokenType;
+
 pub struct Token {
     token_type: TokenType,
     lexeme: String,
@@ -20,9 +22,9 @@ impl Token {
 
 impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        match self.literal {
-            Some(literal) => write!(f, "{} {} {}", self.token_type, self.lexeme, literal),
-            _ => write!(f, "{} {} None", self.token_type, self.lexeme)
+        match &self.literal {
+            Some(literal) => write!(f, "{:?} {} {}", self.token_type, &self.lexeme, literal),
+            _ => write!(f, "{:?} {} None", self.token_type, self.lexeme)
         }
     }
 }

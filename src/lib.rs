@@ -32,6 +32,6 @@ fn run(file: File) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn error(line: u32, message: String) {
+pub fn error(line: usize, message: &str) {
     panic!("Error: {} on line {}", message, line);
 }
