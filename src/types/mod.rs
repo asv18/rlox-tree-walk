@@ -5,6 +5,7 @@ pub mod scanner;
 enum LiteralType {
     NONE,
     STRING(String),
+    NUMBER(f64),
 }
 
 #[derive(Debug)]

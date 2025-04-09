@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, error::Error};
 
 use crate::error;
 
@@ -24,20 +24,22 @@ impl Scanner {
         }
     }
 
-    fn scan_tokens(&self) {
+    fn scan_tokens(&self) -> Result<(), Box<dyn Error>> {
         while !self.is_at_end() {
             self.start = self.current;
-            self.scan_token();
+            self.scan_token()?;
         }
 
-        self.tokens.push(Token::new(EOF, String::new(), LiteralType::NONE, self.line));    
+        self.tokens.push(Token::new(EOF, String::new(), LiteralType::NONE, self.line)); 
+
+        Ok(())
     }
 
     fn is_at_end(&self) -> bool {
         self.source.len() == 0
     }
 
-    fn scan_token(&mut self) {
+    fn scan_token(&mut self) -> Result<(), Box<dyn Error>> {
         let c: char = self.advance();
 
         match c {
@@ -98,9 +100,15 @@ impl Scanner {
                 self.handle_string();
             }
             _ => {
-               error(self.line, "Unknown Character") 
+                if c.is_numeric() {
+                    self.handle_number()?
+                } else {
+                    error(self.line, "Unknown Character")
+                }
             } 
         };
+
+        Ok(())
     }
 
     fn advance(&mut self) -> char {
@@ -154,5 +162,19 @@ impl Scanner {
         let value = self.source[(self.start + 1)..(self.current - 1)].iter().collect::<String>();
 
         self.add_token_inner(TokenType::STRING, LiteralType::STRING(value));
+    }
+
+    fn is_digit(&self, c: char) -> bool {
+        c >= '0' && c <= '9'
+    }
+
+    fn handle_number(&mut self) -> Result<(), Box<dyn Error>> {
+        while (self.is_digit(self.peek_next()) || self.peek_next() == '.') && !self.is_at_end() {
+            self.advance();
+        }
+
+        self.add_token_inner(TokenType::NUMBER, LiteralType::NUMBER(self.source[self.start..self.current].iter().collect::<String>().parse::<f64>()?));
+
+        Ok(())
     }
 }
